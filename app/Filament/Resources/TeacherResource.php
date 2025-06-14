@@ -58,9 +58,15 @@ class TeacherResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('email')->searchable(),
-                Tables\Columns\TextColumn::make('phone')->searchable(),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')->searchable()
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('phone')->searchable()
+                    ->searchable()
+                    ->sortable(),
             ])
             ->filters([
                 //

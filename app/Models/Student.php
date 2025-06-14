@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\EveningClass;
+use App\Models\AcademicClasses;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -29,6 +30,12 @@ class Student extends Model
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    // Student.php
+    public function academicClass()
+    {
+        return $this->belongsTo(AcademicClasses::class,'academic_classes_id');
+    }
 
     public function eveningClasses()
     {

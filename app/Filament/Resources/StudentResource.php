@@ -20,6 +20,9 @@ use Illuminate\Database\Eloquent\Builder;
 use App\Filament\Resources\StudentResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\StudentResource\RelationManagers;
+use App\Exports\StudentsExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Filament\Tables\Actions\Action;
 
 class StudentResource extends Resource
 {
@@ -57,16 +60,16 @@ class StudentResource extends Resource
                     ]),
 
                 Forms\Components\Select::make('academic_classes_id')
-                ->label('Academic Class')
-                ->options(AcademicClasses::all()->pluck('name', 'id'))
-                ->searchable()
-                ->required(),
+                    ->label('Academic Class')
+                    ->options(AcademicClasses::all()->pluck('name', 'id'))
+                    ->searchable()
+                    ->required(),
                 Forms\Components\Select::make('evening_classes')
-                ->label('Evening Classes')
-                ->multiple()
-                ->relationship('eveningClasses', 'name')
-                ->searchable()
-                ->required(),
+                    ->label('Evening Classes')
+                    ->multiple()
+                    ->relationship('eveningClasses', 'name')
+                    ->searchable()
+                    ->required(),
 
                 Section::make('Diagnosis & Skills')
                     ->columns(2)
@@ -118,6 +121,16 @@ class StudentResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->headerActions([
+                Action::make('export')
+                    ->label('Export All')
+                    ->icon('heroicon-o-document')
+                    ->action(function () {
+                        return Excel::download(new StudentsExport, 'all-students-' . now()->format('d-m-Y') . '.xlsx');
+                    })
+                    ->color('success')
+                    ->tooltip('Export all records to Excel'),
+            ])
             ->columns([
                 TextColumn::make('name')
                     ->searchable()
@@ -143,7 +156,7 @@ class StudentResource extends Resource
                         'advanced' => 'success',
                     }),
                 TextColumn::make('school_readiness')
-                      ->limit(30),
+                    ->limit(30),
                 // DIRECT TOGGLE COLUMN - NO NEED FOR SEPARATE ACTION
                 ToggleColumn::make('is_active')
                     ->label('Status')
@@ -177,13 +190,21 @@ class StudentResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->successNotificationTitle('Students were deleted successfully'),
                     Tables\Actions\BulkAction::make('activate')
                         ->icon('heroicon-o-check-circle')
                         ->action(fn($records) => $records->each->update(['is_active' => true])),
                     Tables\Actions\BulkAction::make('deactivate')
                         ->icon('heroicon-o-x-circle')
                         ->action(fn($records) => $records->each->update(['is_active' => false])),
+                    Tables\Actions\BulkAction::make('exportSelected')
+                        ->label('Export Selected')
+                        ->icon('heroicon-o-document')
+                        ->action(function ($records) {
+                            return Excel::download(new StudentsExport($records), 'selected-students-' . now()->format('d-m-Y') . '.xlsx');
+                        })
+                        ->deselectRecordsAfterCompletion(),
                 ]),
             ]);
     }

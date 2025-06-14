@@ -19,7 +19,8 @@ class TeacherResource extends Resource
     protected static ?string $model = Teacher::class;
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationBadgeTooltip = 'The number of teachers';
-    protected static ?string $navigationGroup = 'School Management';
+    protected static ?string $navigationGroup = 'User Management';
+    protected static ?int $navigationSort = 1; // Lower value means it appears first;
     protected static ?string $navigationLabel = 'Teachers';
     public static function getNavigationBadge(): ?string
     {

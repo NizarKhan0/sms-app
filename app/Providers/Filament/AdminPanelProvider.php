@@ -56,6 +56,7 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
-            ->collapsibleNavigationGroups(false);
+            ->collapsibleNavigationGroups(false)
+            ->brandName('EGSS');
     }
 }

@@ -13,7 +13,8 @@ class ManageEveningClassCategories extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->successNotificationTitle('Category was created successfully'),
         ];
     }
 

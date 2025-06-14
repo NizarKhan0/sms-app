@@ -50,7 +50,14 @@ class EveningClassResource extends Resource
     {
         return $table
             ->columns([
+                // relationship dari table pivot kena setup model,migration,relation kena betul
+                Tables\Columns\TextColumn::make('students.name')
+                    ->label('Students Name')
+                    ->formatStateUsing(fn($state, $record) => $record->students->pluck('name')->join('<br>'))
+                    ->html()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Activity Name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('category.name')
@@ -61,7 +68,13 @@ class EveningClassResource extends Resource
                     ->sortable(),
             ])
             ->filters([
-                //
+                // Category filter
+                Tables\Filters\SelectFilter::make('category')
+                    ->relationship('category', 'name'),
+
+                // Teacher filter
+                Tables\Filters\SelectFilter::make('teacher')
+                    ->relationship('teacher', 'name'),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
@@ -90,4 +103,5 @@ class EveningClassResource extends Resource
             'edit' => Pages\EditEveningClass::route('/{record}/edit'),
         ];
     }
+
 }

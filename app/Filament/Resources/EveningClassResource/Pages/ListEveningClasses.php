@@ -13,7 +13,8 @@ class ListEveningClasses extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->successNotificationTitle('Class Evening was created successfully'),
         ];
     }
 }

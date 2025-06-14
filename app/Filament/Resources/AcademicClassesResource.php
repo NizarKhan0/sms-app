@@ -53,7 +53,14 @@ class AcademicClassesResource extends Resource
     {
         return $table
             ->columns([
+                // relationship dari table pivot kena setup model,migration,relation kena betul
+                Tables\Columns\TextColumn::make('students.name')
+                    ->label('Students Name')
+                    ->formatStateUsing(fn($state, $record) => $record->students->pluck('name')->join('<br>'))
+                    ->html()
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Class Name')
                     ->searchable()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('teacher.name')

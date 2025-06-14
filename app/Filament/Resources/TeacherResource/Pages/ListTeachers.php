@@ -13,7 +13,8 @@ class ListTeachers extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()
+                ->successNotificationTitle('Teacher was created successfully'),
         ];
     }
 }

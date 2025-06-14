@@ -1,0 +1,207 @@
+<?php
+
+namespace App\Filament\Resources;
+
+use Filament\Forms;
+use Filament\Tables;
+use App\Models\Student;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Models\EveningClass;
+use App\Models\AcademicClasses;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
+use Filament\Forms\Components\Section;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\StudentResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\StudentResource\RelationManagers;
+
+class StudentResource extends Resource
+{
+    protected static ?string $model = Student::class;
+    protected static ?string $navigationIcon = 'heroicon-o-user-group';
+    protected static ?string $navigationBadgeTooltip = 'The number of students';
+    protected static ?string $navigationGroup = 'User Management';
+    protected static ?int $navigationSort = 1; // Lower value means it appears first;
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function form(Form $form): Form
+    {
+        return $form
+            ->schema([
+                Section::make('Personal Information')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('age')
+                            ->required()
+                            ->numeric()
+                            ->minValue(3)
+                            ->maxValue(25),
+                        Toggle::make('is_active')
+                            ->label('Active Student')
+                            ->default(true)
+                            ->onColor('success')
+                            ->offColor('danger')
+                            ->columnSpanFull(),
+                    ]),
+
+                Forms\Components\Select::make('academic_classes_id')
+                ->label('Academic Class')
+                ->options(AcademicClasses::all()->pluck('name', 'id'))
+                ->searchable()
+                ->required(),
+                Forms\Components\Select::make('evening_classes')
+                ->label('Evening Classes')
+                ->multiple()
+                ->relationship('eveningClasses', 'name')
+                ->searchable()
+                ->required(),
+
+                Section::make('Diagnosis & Skills')
+                    ->columns(2)
+                    ->schema([
+                        Forms\Components\Textarea::make('diagnosis')
+                            ->required()
+                            ->columnSpanFull(),
+                        Forms\Components\Select::make('reading_skills')
+                            ->options([
+                                'beginner' => 'Beginner',
+                                'intermediate' => 'Intermediate',
+                                'advanced' => 'Advanced',
+                            ])
+                            ->required(),
+                        Forms\Components\Select::make('writing_skills')
+                            ->options([
+                                'beginner' => 'Beginner',
+                                'intermediate' => 'Intermediate',
+                                'advanced' => 'Advanced',
+                            ])
+                            ->required(),
+                    ]),
+
+                Section::make('Development & Behavior')
+                    ->schema([
+                        Forms\Components\Textarea::make('school_readiness')
+                            ->label('School Readiness Assessment'),
+                        Forms\Components\Textarea::make('motor_skills')
+                            ->label('Motor Skills Development'),
+                        Forms\Components\Textarea::make('behaviour_skills')
+                            ->label('Behavioral Skills'),
+                        Forms\Components\Textarea::make('sensory_issues')
+                            ->label('Sensory Issues'),
+                        Forms\Components\Textarea::make('communication_skills')
+                            ->label('Communication Skills'),
+                    ]),
+
+                Section::make('Medical & Additional Info')
+                    ->schema([
+                        Forms\Components\Textarea::make('other_medical_conditions')
+                            ->label('Other Medical Conditions'),
+                        Forms\Components\Textarea::make('tips_and_tricks')
+                            ->label('Teaching Tips & Strategies')
+                            ->columnSpanFull(),
+                    ]),
+            ]);
+    }
+
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('age')
+                    ->sortable()
+                    ->alignCenter(),
+                TextColumn::make('diagnosis')
+                    ->limit(30)
+                    ->tooltip(fn($record) => $record->diagnosis),
+                TextColumn::make('reading_skills')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'beginner' => 'danger',
+                        'intermediate' => 'warning',
+                        'advanced' => 'success',
+                    }),
+                TextColumn::make('writing_skills')
+                    ->badge()
+                    ->color(fn(string $state): string => match ($state) {
+                        'beginner' => 'danger',
+                        'intermediate' => 'warning',
+                        'advanced' => 'success',
+                    }),
+                TextColumn::make('school_readiness')
+                      ->limit(30),
+                // DIRECT TOGGLE COLUMN - NO NEED FOR SEPARATE ACTION
+                ToggleColumn::make('is_active')
+                    ->label('Status')
+                    ->onColor('success')
+                    ->offColor('danger')
+                    ->sortable(),
+            ])
+            ->filters([
+                Tables\Filters\TernaryFilter::make('is_active')
+                    ->label('Active Status')
+                    ->trueLabel('Active students')
+                    ->falseLabel('Inactive students'),
+                Tables\Filters\SelectFilter::make('reading_skills')
+                    ->options([
+                        'beginner' => 'Beginner Reading',
+                        'intermediate' => 'Intermediate Reading',
+                        'advanced' => 'Advanced Reading',
+                    ]),
+                Tables\Filters\SelectFilter::make('writing_skills')
+                    ->options([
+                        'beginner' => 'Beginner Writing',
+                        'intermediate' => 'Intermediate Writing',
+                        'advanced' => 'Advanced Writing',
+                    ]),
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->successNotificationTitle('Student was deleted successfully'),
+            ])
+            ->bulkActions([
+                Tables\Actions\BulkActionGroup::make([
+                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\BulkAction::make('activate')
+                        ->icon('heroicon-o-check-circle')
+                        ->action(fn($records) => $records->each->update(['is_active' => true])),
+                    Tables\Actions\BulkAction::make('deactivate')
+                        ->icon('heroicon-o-x-circle')
+                        ->action(fn($records) => $records->each->update(['is_active' => false])),
+                ]),
+            ]);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            //
+        ];
+    }
+
+    public static function getPages(): array
+    {
+        return [
+            'index' => Pages\ListStudents::route('/'),
+            'create' => Pages\CreateStudent::route('/create'),
+            'view' => Pages\ViewStudent::route('/{record}'), // View Only
+            'edit' => Pages\EditStudent::route('/{record}/edit'),
+        ];
+    }
+}

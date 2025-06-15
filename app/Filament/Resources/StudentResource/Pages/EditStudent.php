@@ -14,7 +14,7 @@ class EditStudent extends EditRecord
         return $this->getResource()::getUrl('index');
     }
 
-    protected function getCreatedNotificationTitle(): ?string
+    protected function getSavedNotificationTitle(): ?string
     {
         return 'Student successfully updated';
     }

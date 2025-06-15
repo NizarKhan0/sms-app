@@ -41,10 +41,11 @@ class AcademicClassesResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')->required(),
-                Forms\Components\Select::make('teacher_id')
-                    ->label('Teacher')
-                    ->options(Teacher::all()->pluck('name', 'id'))
-                    ->searchable()
+                Forms\Components\Select::make('teachers')
+                    ->label('Teachers')
+                    ->relationship('teachers', 'name') // relationship must be defined in model
+                    ->searchable(false) // disable search bar
+                    ->preload() // load semua data awal-awal
                     ->required(),
             ]);
     }
@@ -63,10 +64,13 @@ class AcademicClassesResource extends Resource
                     ->formatStateUsing(fn($state, $record) => $record->students->pluck('name')->join('<br>'))
                     ->html()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('teacher.name')
-                    // ->label('Teachers')
-                    ->searchable()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('teachers')
+                    ->label('Teachers')
+                    ->formatStateUsing(function ($state, $record) {
+                        return $record->teachers->pluck('name')->join('<br>');
+                    })
+                    ->html()
+                    ->searchable(),
             ])
             ->filters([
 

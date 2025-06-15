@@ -67,8 +67,9 @@ class StudentResource extends Resource
                 Forms\Components\Select::make('evening_classes')
                     ->label('Evening Classes')
                     ->multiple()
-                    ->relationship('eveningClasses', 'name')
-                    ->searchable()
+                    ->relationship('eveningClasses', 'name') // relationship must be defined in model
+                    ->searchable(false) // disable search bar
+                    ->preload() // load semua data awal-awal
                     ->required(),
 
                 Section::make('Diagnosis & Skills')

@@ -14,8 +14,15 @@ class Teacher extends Model
         'address',
     ];
 
-    public function teacher(): HasMany
+    // untuk 1 teacher boleh 1 class
+    // public function teacher(): HasMany
+    // {
+    //     return $this->hasMany(AcademicClasses::class, 'teacher_id');
+    // }
+
+    // untuk 1 teacher boleh banyak class
+    public function academicClasses()
     {
-        return $this->hasMany(AcademicClasses::class, 'teacher_id');
+        return $this->belongsToMany(AcademicClasses::class, 'academic_class_teacher');
     }
 }

@@ -14,9 +14,16 @@ class AcademicClasses extends Model
         'teacher_id',
     ];
 
-    public function teacher(): BelongsTo
+    // untuk 1 teacher boleh 1 class
+    // public function teacher(): BelongsTo
+    // {
+    //     return $this->belongsTo(Teacher::class);
+    // }
+
+    // untuk 1 teacher boleh banyak class
+    public function teachers()
     {
-        return $this->belongsTo(Teacher::class);
+        return $this->belongsToMany(Teacher::class, 'academic_class_teacher');
     }
 
     public function students(): HasMany

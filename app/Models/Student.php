@@ -16,6 +16,7 @@ class Student extends Model
         'diagnosis',
         'reading_skills',
         'writing_skills',
+        'numeracy',
         'school_readiness',
         'motor_skills',
         'behaviour_skills',

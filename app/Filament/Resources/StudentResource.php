@@ -43,8 +43,12 @@ class StudentResource extends Resource
                 Section::make('Personal Information')
                     ->columns(2)
                     ->schema([
-                        Forms\Components\TextInput::make('name')
+                        Forms\Components\TextInput::make('full_name')
+                            ->label('Full Name')
                             ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('name')
+                            ->label('Nickname')
                             ->maxLength(255),
                         Forms\Components\TextInput::make('age')
                             ->required()
@@ -55,8 +59,8 @@ class StudentResource extends Resource
                             ->label('Active Student')
                             ->default(true)
                             ->onColor('success')
-                            ->offColor('danger')
-                            ->columnSpanFull(),
+                            ->offColor('danger'),
+                            // ->columnSpanFull(),
                     ]),
 
                 Forms\Components\Select::make('academic_classes_id')
@@ -69,42 +73,34 @@ class StudentResource extends Resource
                     ->multiple()
                     ->relationship('eveningClasses', 'name') // relationship must be defined in model
                     ->searchable(false) // disable search bar
-                    ->preload() // load semua data awal-awal
-                    ->required(),
+                    ->preload(), // load semua data awal-awal
+                // ->required(),
 
                 Section::make('Diagnosis & Skills')
-                    ->columns(2)
+                    ->columns(3)
                     ->schema([
                         Forms\Components\Textarea::make('diagnosis')
                             ->required()
                             ->columnSpanFull(),
-                        Forms\Components\Select::make('reading_skills')
-                            ->options([
-                                'beginner' => 'Beginner',
-                                'intermediate' => 'Intermediate',
-                                'advanced' => 'Advanced',
-                            ])
-                            ->required(),
-                        Forms\Components\Select::make('writing_skills')
-                            ->options([
-                                'beginner' => 'Beginner',
-                                'intermediate' => 'Intermediate',
-                                'advanced' => 'Advanced',
-                            ])
-                            ->required(),
+                        Forms\Components\RichEditor::make('reading_skills')
+                            ->label('Reading Skills'),
+                        Forms\Components\RichEditor::make('numeracy')
+                            ->label('Numeracy'),
+                        Forms\Components\RichEditor::make('writing_skills')
+                            ->label('Handwriting Skills'),
                     ]),
 
                 Section::make('Development & Behavior')
                     ->schema([
-                        Forms\Components\Textarea::make('school_readiness')
+                        Forms\Components\RichEditor::make('school_readiness')
                             ->label('School Readiness Assessment'),
-                        Forms\Components\Textarea::make('motor_skills')
+                        Forms\Components\RichEditor::make('motor_skills')
                             ->label('Motor Skills Development'),
-                        Forms\Components\Textarea::make('behaviour_skills')
+                        Forms\Components\RichEditor::make('behaviour_skills')
                             ->label('Behavioral Skills'),
-                        Forms\Components\Textarea::make('sensory_issues')
+                        Forms\Components\RichEditor::make('sensory_issues')
                             ->label('Sensory Issues'),
-                        Forms\Components\Textarea::make('communication_skills')
+                        Forms\Components\RichEditor::make('communication_skills')
                             ->label('Communication Skills'),
                     ]),
 
@@ -134,18 +130,19 @@ class StudentResource extends Resource
             ])
             ->columns([
                 TextColumn::make('name')
+                    ->label('Nickname')
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('age')
                     ->sortable()
                     ->alignCenter(),
-                TextColumn::make('academicClass.name')
+                TextColumn::make('academicClass.name') // relationship
                     ->sortable()
                     // ->alignCenter()
                     ->searchable(),
-                TextColumn::make('diagnosis')
-                    ->limit(30)
-                    ->tooltip(fn($record) => $record->diagnosis),
+                // TextColumn::make('diagnosis')
+                //     ->limit(30)
+                //     ->tooltip(fn($record) => $record->diagnosis),
                 // TextColumn::make('reading_skills')
                 //     ->badge()
                 //     ->color(fn(string $state): string => match ($state) {
@@ -175,6 +172,7 @@ class StudentResource extends Resource
                     ->relationship('academicClass', 'name')
                     ->searchable()
                     ->multiple()
+                    ->preload()
                     ->indicateUsing(function (array $state): ?string {
                         if (empty($state['values']))
                             return null;

@@ -13,18 +13,20 @@ return new class extends Migration
     {
         Schema::create('students', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('full_name');
+            $table->string('name')->nullable();
             $table->integer('age');
-            $table->text('diagnosis');
-            $table->string('reading_skills');
-            $table->string('writing_skills');
-            $table->text('school_readiness');
-            $table->text('motor_skills');
-            $table->text('behaviour_skills');
-            $table->text('sensory_issues');
-            $table->text('communication_skills');
-            $table->text('other_medical_conditions');
-            $table->text('tips_and_tricks');
+            $table->longText('diagnosis')->nullable();
+            $table->longText('reading_skills')->nullable();
+            $table->longText('writing_skills')->nullable();
+            $table->longText('numeracy')->nullable();
+            $table->longText('school_readiness')->nullable();
+            $table->longText('motor_skills')->nullable();
+            $table->longText('behaviour_skills')->nullable();
+            $table->longText('sensory_issues')->nullable();
+            $table->longText('communication_skills')->nullable();
+            $table->text('other_medical_conditions')->nullable();
+            $table->text('tips_and_tricks')->nullable();
             $table->boolean('is_active')->default(true); // Active/inactive toggle
             $table->foreignId('academic_classes_id')->constrained()->onDelete('cascade');
             $table->timestamps();

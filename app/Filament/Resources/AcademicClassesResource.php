@@ -43,6 +43,7 @@ class AcademicClassesResource extends Resource
                 Forms\Components\TextInput::make('name')->required(),
                 Forms\Components\Select::make('teachers')
                     ->label('Teachers')
+                    ->multiple()
                     ->relationship('teachers', 'name') // relationship must be defined in model
                     ->searchable(false) // disable search bar
                     ->preload() // load semua data awal-awal
@@ -64,7 +65,7 @@ class AcademicClassesResource extends Resource
                     ->formatStateUsing(fn($state, $record) => $record->students->pluck('name')->join('<br>'))
                     ->html()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('teachers')
+                Tables\Columns\TextColumn::make('teachers.name')
                     ->label('Teachers')
                     ->formatStateUsing(function ($state, $record) {
                         return $record->teachers->pluck('name')->join('<br>');

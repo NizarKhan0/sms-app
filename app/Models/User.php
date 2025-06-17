@@ -38,16 +38,16 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         // Solusi sementara: return true untuk testing
-        // return true; // HATI-HATI, hanya untuk debugging!
+        return true; // HATI-HATI, hanya untuk debugging!
         // Production: hanya domain tertentu
         // return str_ends_with($this->email, '@solofux.xyz');
         // Izinkan SEMUA user di environment local
-        if (app()->environment('production')) {
-            return true;
-        }
+        // if (app()->environment('production')) {
+        //     return true;
+        // }
 
-        // Untuk production (dan environment lainnya), berikan akses khusus
-        return str_ends_with($this->email, '@solofux.xyz');
+        // // Untuk production (dan environment lainnya), berikan akses khusus
+        // return str_ends_with($this->email, '@solofux.xyz');
     }
     public function teacher()
     {

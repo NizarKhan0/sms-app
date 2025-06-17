@@ -47,7 +47,7 @@ class AdminUserSeeder extends Seeder
                     'name' => $name,
                     'email' => $email,
                     'email_verified_at' => now(),
-                    'password' => Hash::make('SecurePassword123!'), // Change to actual secure password
+                    'password' => Hash::make('12345678'), // change this to something secure
                     'role' => 'teacher',
                 ]
             );

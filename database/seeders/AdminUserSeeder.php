@@ -15,14 +15,42 @@ class AdminUserSeeder extends Seeder
     public function run(): void
     {
         User::updateOrCreate(
-            ['email' => 'admin@demo.com'], // unique constraint
+            ['email' => 'superadmin@demo.com'], // unique constraint
             [
-                'name' => 'Admin',
-                'email' => 'admin@demo.com',
+                'name' => 'Nizar',
+                'email' => 'superadmin@demo.com',
                 'email_verified_at' => now(),
                 'password' => Hash::make('password'), // change this to something secure
+                'role' => 'super-admin', // assuming you use a 'role' column
+            ]
+        );
+
+        User::updateOrCreate(
+            ['email' => 'azmeer@excelgenius.com.my'], // unique constraint
+            [
+                'name' => 'Azmeer',
+                'email' => 'azmeer@excelgenius.com.my',
+                'email_verified_at' => now(),
+                'password' => Hash::make('12345678'), // change this to something secure
                 'role' => 'admin', // assuming you use a 'role' column
             ]
         );
+
+        $names = ['Nadia', 'Aidee', 'Nurul', 'Kye', 'Zuyya', 'Izni'];
+
+        foreach ($names as $name) {
+            $email = strtolower($name) . '@excelgenius.com.my';
+
+            User::updateOrCreate(
+                ['email' => $email],
+                [
+                    'name' => $name,
+                    'email' => $email,
+                    'email_verified_at' => now(),
+                    'password' => Hash::make('SecurePassword123!'), // Change to actual secure password
+                    'role' => 'teacher',
+                ]
+            );
+        }
     }
 }

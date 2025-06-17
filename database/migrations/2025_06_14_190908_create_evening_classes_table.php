@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('evening_classes', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->foreignId('category_id')->constrained('evening_class_categories')->onDelete('cascade');
-            $table->foreignId('teacher_id')->constrained()->onDelete('cascade');
+            $table->foreignId('category_id')->constrained('evening_class_categories')->onDelete('cascade')->nullable();
+            $table->foreignId('teacher_id')->constrained()->onDelete('cascade')->nullable();
             $table->timestamps();
         });
     }

@@ -18,12 +18,13 @@ class UserResource extends Resource
 {
     protected static ?string $model = User::class;
     protected static ?string $navigationIcon = 'heroicon-o-user';
+    protected static ?string $navigationBadgeTooltip = 'The number of users';
     // custom label sidebar
     public static function getLabel(): string
     {
         $user = auth()->user();
 
-        if ($user->isAdmin()) {
+        if ($user->isSuperAdmin() || $user->isAdmin()) {
             return 'Users';
         }
 
@@ -33,22 +34,21 @@ class UserResource extends Resource
     {
         $query = parent::getEloquentQuery();
 
-        // If user is teacher, show only their own record
-        if (!auth()->user()->isAdmin()) {
-            $query->where('id', auth()->id());
+        // If role teacher & admin just show them
+        if (!auth()->user()->isSuperAdmin()) {
+            $query->whereIn('role', ['teacher', 'admin']);
         }
-        // If admin, return all
         return $query;
     }
     public static function getNavigationBadge(): ?string
     {
         $user = auth()->user();
 
-        if ($user->isAdmin()) {
+        if ($user->isSuperAdmin()) {
             return static::getModel()::count();
         }
 
-        return null;
+        return static::getModel()::whereIn('role', ['teacher', 'admin'])->count();
     }
 
     public static function form(Form $form): Form
@@ -65,10 +65,11 @@ class UserResource extends Resource
 
                 Forms\Components\Select::make('role')
                     ->options([
+                        'super-admin' => 'Super Admin',
                         'admin' => 'Admin',
-                        'teacher' => 'Teacher'
+                        'teacher' => 'Teacher',
                     ])
-                    ->visible(fn() => auth()->user()->isAdmin())
+                    ->visible(fn() => auth()->user()->isSuperAdmin())
                     ->required(),
 
                 Forms\Components\TextInput::make('password')
@@ -90,20 +91,31 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name'),
-                Tables\Columns\TextColumn::make('email'),
-                Tables\Columns\TextColumn::make('role'),
+                Tables\Columns\TextColumn::make('name')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('email')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('role')
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime('d-m-Y'),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->successNotificationTitle('User was deleted successfully')
+                    ->visible(fn() => auth()->user()->isSuperAdmin()),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => auth()->user()->isSuperAdmin()),
                 ]),
             ]);
     }
@@ -114,17 +126,17 @@ class UserResource extends Resource
     // ▼▼▼ ADD AUTHORIZATION METHODS HERE ▼▼▼
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->isAdmin() || $record->id === auth()->id();
+        return auth()->user()->isSuperAdmin() || auth()->user()->isAdmin() || $record->id === auth()->id();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->isAdmin();
+        return auth()->user()->isSuperAdmin();
     }
 
     public static function canCreate(): bool
     {
-        return auth()->user()->isAdmin();
+        return auth()->user()->isSuperAdmin();
     }
     // ▲▲▲ END OF AUTHORIZATION METHODS ▲▲▲
 

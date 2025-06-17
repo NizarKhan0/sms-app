@@ -65,15 +65,16 @@ class StudentResource extends Resource
 
                 Forms\Components\Select::make('academic_classes_id')
                     ->label('Academic Class')
-                    ->options(AcademicClasses::all()->pluck('name', 'id'))
+                    ->relationship('academicClass', 'name') // Ganti dengan ini
                     ->searchable()
+                    ->preload(5)
                     ->required(),
                 Forms\Components\Select::make('evening_classes')
                     ->label('Evening Classes')
                     ->multiple()
                     ->relationship('eveningClasses', 'name') // relationship must be defined in model
                     ->searchable(false) // disable search bar
-                    ->preload(), // load semua data awal-awal
+                    ->preload(5), // load semua data awal-awal
                 // ->required(),
 
                 Section::make('Diagnosis & Skills')
@@ -221,7 +222,7 @@ class StudentResource extends Resource
                             return Excel::download(new StudentsExport($records), 'selected-students-' . now()->format('d-m-Y') . '.xlsx');
                         })
                         ->deselectRecordsAfterCompletion(),
-                ]),
+                    ]),
             ]);
     }
 

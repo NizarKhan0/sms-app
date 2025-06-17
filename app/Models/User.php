@@ -6,9 +6,11 @@ namespace App\Models;
 use App\Models\Teacher;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
@@ -24,9 +26,28 @@ class User extends Authenticatable
         'password',
         'role',
     ];
+    public function isSuperAdmin()
+    {
+        return $this->role === 'super-admin';
+    }
     public function isAdmin()
     {
         return $this->role === 'admin';
+    }
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Solusi sementara: return true untuk testing
+        // return true; // HATI-HATI, hanya untuk debugging!
+        // Production: hanya domain tertentu
+        // return str_ends_with($this->email, '@solofux.xyz');
+        // Izinkan SEMUA user di environment local
+        if (app()->environment('production')) {
+            return true;
+        }
+
+        // Untuk production (dan environment lainnya), berikan akses khusus
+        return str_ends_with($this->email, '@solofux.xyz');
     }
     public function teacher()
     {

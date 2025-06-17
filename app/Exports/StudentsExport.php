@@ -28,13 +28,15 @@ class StudentsExport implements FromCollection, WithHeadings, WithMapping, Shoul
     {
         return [
             'No.', // Changed from ID to No.
-            'Name',
+            'Full Name',
+            'Nickname',
             'Age',
             'Academic Class',
             'Co-Curricular Class',
             'Diagnosis',
             'Reading Skills',
             'Writing Skills',
+            'Numeracy',
             'School Readiness',
             'Motor Skills',
             'Behaviour Skills',
@@ -55,6 +57,7 @@ class StudentsExport implements FromCollection, WithHeadings, WithMapping, Shoul
 
         return [
             $index, // Sequential number instead of ID
+            $student->full_name,
             $student->name,
             $student->age,
             $student->academicClass->name ?? 'N/A',
@@ -62,6 +65,7 @@ class StudentsExport implements FromCollection, WithHeadings, WithMapping, Shoul
             $student->diagnosis,
             ucfirst($student->reading_skills),
             ucfirst($student->writing_skills),
+            $student->numeracy,
             $student->school_readiness,
             $student->motor_skills,
             $student->behaviour_skills,

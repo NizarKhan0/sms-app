@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AcademicClasses extends Model
 {
+    protected $table = 'academic_classes'; // Sesuaikan dengan nama tabel sebenarnya
     protected $fillable = [
         'name',
         'teacher_id',

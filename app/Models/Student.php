@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Student extends Model
 {
     protected $fillable = [
+        'full_name',
         'name',
         'age',
         'diagnosis',

@@ -46,20 +46,45 @@ class TeacherResource extends Resource
                 //     )
                 //     ->maxLength(255),
 
+                // TextInput::make('phone')
+                //     ->required()
+                //     ->tel()
+                //     ->maxLength(20),
                 TextInput::make('phone')
-                    ->required()
+                    ->label('Phone')
                     ->tel()
-                    ->maxLength(20),
+                    ->required()
+                    ->maxLength(20)
+                    ->placeholder('0123456789'),
 
                 Forms\Components\Textarea::make('address')
-                    ->required()
+                    // ->required()
                     ->columnSpanFull(),
                 Forms\Components\Select::make('user_id')
                     ->label('User Account')
-                    ->relationship('user', 'email')
+                    // ->relationship('user', 'email') //ini untuk load semua
+                    ->relationship(
+                        name: 'user',
+                        titleAttribute: 'email',
+                        modifyQueryUsing: function (Builder $query, ?Model $record) {
+                            // Dapatkan semua user_id yang sudah di-assign ke teacher lain
+                            $assignedUserIds = Teacher::query()
+                                ->when($record, function ($query) use ($record) {
+                                // Kecualikan teacher yang sedang diedit
+                                $query->where('id', '!=', $record->id);
+                            })
+                                ->whereNotNull('user_id')
+                                ->pluck('user_id')
+                                ->toArray();
+
+                            // Filter hanya user yang belum di-assign
+                            return $query->whereNotIn('id', $assignedUserIds);
+                        }
+                    )
                     ->searchable()
                     ->preload()
-                    ->required()
+                    // ->required()
+                    ->unique(ignoreRecord: true) // Tambahkan ini
                     ->createOptionForm([
                         Forms\Components\TextInput::make('name')
                             ->required(),
@@ -76,13 +101,14 @@ class TeacherResource extends Resource
                             ->required(),
                         Forms\Components\Select::make('role')
                             ->options([
+                                'super-admin' => 'Super Admin',
+                                'admin' => 'Admin',
                                 'teacher' => 'Teacher',
-                                'admin' => 'Admin'
                             ])
                             ->default('teacher')
                             ->required()
                     ])
-                    ->visible(fn() => auth()->user()->isAdmin()) // Only admins can assign users
+                    ->visible(fn() => auth()->user()->isSuperAdmin()) // Only super-admin can assign users
             ]);
     }
 
@@ -93,9 +119,39 @@ class TeacherResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('phone')->searchable()
-                    ->searchable()
-                    ->sortable(),
+
+                Tables\Columns\TextColumn::make('phone')
+                    ->label('Phone / WhatsApp')
+                    ->formatStateUsing(function ($state) {
+                        if (!$state)
+                            return null;
+
+                        // Clean to digits only
+                        $number = preg_replace('/[^0-9]/', '', $state);
+
+                        // Handle different input formats
+                        if (str_starts_with($number, '0')) {
+                            $number = substr($number, 1);
+                        } elseif (str_starts_with($number, '60')) {
+                            $number = substr($number, 2);
+                        }
+
+                        $formatted = '+60' . $number;
+                        return $formatted;
+                    })
+                    ->url(function ($record) {
+                        $number = preg_replace('/[^0-9]/', '', $record->phone);
+
+                        if (str_starts_with($number, '0')) {
+                            $number = substr($number, 1);
+                        } elseif (str_starts_with($number, '60')) {
+                            $number = substr($number, 2);
+                        }
+
+                        return 'https://wa.me/60' . $number;
+                    })
+                    ->openUrlInNewTab(),
+
                 Tables\Columns\TextColumn::make('address')->searchable()
                     ->searchable()
                     ->sortable(),
@@ -110,7 +166,8 @@ class TeacherResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\DeleteBulkAction::make()
+                        ->visible(fn() => auth()->user()->isSuperAdmin()),
                 ]),
             ]);
     }
@@ -121,14 +178,26 @@ class TeacherResource extends Resource
     //         ($record->user_id === auth()->id());
     // }
     // yg create teacher dan admin boleh edit record
+
+    public static function canCreate(): bool
+    {
+        $user = auth()->user();
+
+        // Admins can create many
+        if ($user->isSuperAdmin() || $user->isAdmin()) {
+            return true;
+        }
+        // Allow create only if the user hasn't created a teacher yet
+        return Teacher::where('user_id', $user->id)->doesntExist();
+    }
     public static function canEdit(Model $record): bool
     {
-        return auth()->user()->isAdmin() || $record->user_id === auth()->id();
+        return auth()->user()->isSuperAdmin() || auth()->user()->isAdmin() || $record->user_id === auth()->id();
     }
 
     public static function canDelete(Model $record): bool
     {
-        return auth()->user()->isAdmin();
+        return auth()->user()->isSuperAdmin();
     }
 
     // public static function canCreate(): bool

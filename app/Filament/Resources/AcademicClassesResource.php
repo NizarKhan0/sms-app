@@ -46,8 +46,8 @@ class AcademicClassesResource extends Resource
                     ->multiple()
                     ->relationship('teachers', 'name') // relationship must be defined in model
                     ->searchable(false) // disable search bar
-                    ->preload() // load semua data awal-awal
-                    ->required(),
+                    ->preload(), // load semua data awal-awal
+                    // ->required(),
             ]);
     }
 

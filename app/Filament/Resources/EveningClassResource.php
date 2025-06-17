@@ -36,13 +36,13 @@ class EveningClassResource extends Resource
                 Forms\Components\Select::make('category_id')
                     ->label('Category')
                     ->options(EveningClassCategory::all()->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
+                    ->searchable(),
+                    // ->required(),
                 Forms\Components\Select::make('teacher_id')
                     ->label('Teacher')
                     ->options(Teacher::all()->pluck('name', 'id'))
-                    ->searchable()
-                    ->required(),
+                    ->searchable(),
+                    // ->required(),
             ]);
     }
 

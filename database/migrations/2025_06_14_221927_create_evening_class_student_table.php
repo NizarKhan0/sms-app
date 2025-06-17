@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -13,8 +12,15 @@ return new class extends Migration
     {
         Schema::create('evening_class_student', function (Blueprint $table) {
             $table->id(); // optional, boleh buang kalau nak pure pivot table
-            $table->foreignId('evening_class_id')->constrained('evening_classes')->onDelete('cascade');
-            $table->foreignId('student_id')->constrained()->onDelete('cascade');
+            $table->foreignId('evening_class_id')
+                ->nullable()
+                ->constrained('evening_classes')
+                ->onDelete('cascade');
+            $table
+                ->foreignId('student_id')
+                ->nullable()
+                ->constrained()
+                ->onDelete('cascade');
             $table->timestamps();
 
             $table->unique(['evening_class_id', 'student_id']); // elak duplicate entries

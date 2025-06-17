@@ -33,8 +33,15 @@ class EveningClassCategoryResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->unique(),
+                ->required()
+                ->unique(
+                    table: EveningClassCategory::class,
+                    column: 'name',
+                    ignoreRecord: true // Allow same name when editing existing record
+                )
+                ->validationMessages([
+                    'unique' => 'This category name already exists'
+                ]),
             ]);
     }
 

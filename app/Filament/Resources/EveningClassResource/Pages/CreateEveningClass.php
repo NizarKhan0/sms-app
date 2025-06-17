@@ -33,6 +33,7 @@ class CreateEveningClass extends CreateRecord
                 ->form([
                     TextInput::make('name')
                         ->label('Category Name')
+                        ->unique(EveningClassCategory::class, 'name')
                         ->required(),
                 ])
                 ->action(function (array $data): void {
